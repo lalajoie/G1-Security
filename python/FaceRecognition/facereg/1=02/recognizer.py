@@ -34,15 +34,15 @@ mydb = mysql.connector.connect (
 cursorA = mydb.cursor(buffered=True)
 
 
-#def getProfile(ID):
- #   cmd="SELECT * FROM testingLogs WHERE ID+" + str(ID)
-  #  cursorA.execute(cmd)
-  #  profile = None
-   # for row in cursorA:
-   #     profile=row
-   # mydb.commit()
+def getProfile(ID):
+    cmd="SELECT * FROM testingLogs WHERE ID+" + str(ID)
+    cursorA.execute(cmd)
+    profile = None
+    for row in cursorA:
+        profile=row
+    mydb.commit()
     #cursorA.close()
-#     return profile
+    return profile
 
 relay = 12
 
@@ -66,12 +66,19 @@ recognizer.read('trainer.yml')
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 #iniciate id counter
-
+id = 0
 
 # names related to ids: example ==> Marcelo: id=1,  etc
-names = ["Lala", "Vincent"]
+names = ['Lala', 'Milky', 'Covid']
 
+# Initialize and start realtime video capture
+#cam = cv2.VideoCapture(0)
+#cam.set(3, 320) # set video widht
+#cam.set(4, 240) # set video height
 
+# Define min window size to be recognized as a face
+#minW = 0.1*cam.get(3)
+#minH = 0.1*cam.get(4)
 
 for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port = True):
     frame = frame.array
@@ -83,17 +90,14 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
         roiGray = gray[y:y+h, x:x+w]
         
         id_, conf = recognizer.predict(roiGray)
-        #profile=getProfile(id_)
+        profile=getProfile(id_)
         
-        #if profile!=None and conf < 100:
-        if conf < 95:
-            name = names[id_]
+        if profile!=None and conf < 100:
             conf = "{0}%".format(round(100-conf))
             #GPIO.output(relay, 0)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            #cv2.putText(frame, str(profile[1])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-            cv2.putText(frame, name+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-            #lcd.message('Welcome ' + names)
+            cv2.putText(frame, str(profile[1])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
+            lcd.message('Welcome ' + str(profile[1]))
             #time.sleep(5)
             #GPIO.output(relay, 1)
         else:
