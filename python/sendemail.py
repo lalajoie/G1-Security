@@ -1,38 +1,34 @@
+#!/usr/bin/env python
+
 import smtplib
-import datetime
-now = datetime.datetime.now()
 
-SMTP_SERVER = 'smtp.gmail.com'
-SMTP_PORT = 587
-GMAIL_USERNAME = 'g1sec.notif@gmail.com'
-GMAIL_PASSWORD = 'g1secthesis'
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
-class Emailer:
-    def sendmail(self, recipient, subject, content):
-         
-        #Create Headers
-        headers = ["From: " + GMAIL_USERNAME, "Subject: " + subject, "To: " + recipient,
-                   "MIME-Version: 1.0", "Content-Type: text/html"]
-        headers = "\r\n".join(headers)
- 
-        #Connect to Gmail Server
-        session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        session.ehlo()
-        session.starttls()
-        session.ehlo()
- 
-        #Login to Gmail
-        session.login(GMAIL_USERNAME, GMAIL_PASSWORD)
- 
-        #Send Email & Exit
-        session.sendmail(GMAIL_USERNAME, recipient, headers + "\r\n\r\n" + content)
-        session.quit
- 
-sender = Emailer()
- 
-sendTo = 'lalajoiedg@gmail.com'
-emailSubject = "g1Sec - SOMEONE'S AT YOUR DOOR"
-emailContent = "There's a stranger at your door."
- 
-#Sends an email to the "sendTo" address with the specified "emailSubject" as the subject and "emailContent" as the email content.
-sender.sendmail(sendTo, emailSubject, emailContent)  
+fromaddr = "g1sec.notif@gmail.com"
+toaddr = "lalajoiedg@gmail.com"
+
+msg = MIMEMultipart()
+msg['From'] = fromaddr
+msg['To'] = toaddr
+msg['Subject'] = "g1Sec - SOMEONE'S AT YOUR DOOR"
+body = 'There is a stranger at your door.'
+msg.attach(MIMEText(body, 'plain'))
+
+filename = "intruder.jpg"
+attachment = open("/var/www/html/g1-Security/python/facedb/strangers/intruder.jpg", "rb")
+
+part = MIMEBase('application', 'octet-stream')
+part.set_payload((attachment).read())
+encoders.encode_base64(part)
+part.add_header('Content-Disposition', "attachment; filename= {}".format(filename))
+msg.attach(part)
+
+server = smtplib.SMTP('smtp.gmail.com', 587)
+server.starttls()
+server.login(fromaddr, "g1secthesis")
+text = msg.as_string()
+server.sendmail(fromaddr, toaddr, text)
+server.quit()

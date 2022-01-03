@@ -12,5 +12,5 @@ project = tr.initProjectById(PROJECT_ID)
 # Send a SMS message
 project.sendMessage(
     to_number = '+639217301559',
-    content = 'Hello world!'
+    content = 'Unknown person detected. Check your email to see the unidentified person. \n\n\nFrom G1 Security'
 )

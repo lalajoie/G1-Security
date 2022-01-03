@@ -8,6 +8,7 @@ import RPi.GPIO as GPIO
 import pickle
 import time
 from time import sleep
+import datetime
 from Adafruit_CharLCD import Adafruit_CharLCD
 
 #relay
@@ -34,7 +35,7 @@ cursorA = mydb.cursor(buffered=True)
 
 
 def getProfile(ID):
-    cmd="SELECT * FROM test WHERE userID+" + str(ID)
+    cmd="SELECT * FROM test WHERE pID+" + str(ID)
     cursorA.execute(cmd)
     profile = None
     for row in cursorA:
@@ -59,6 +60,7 @@ recognizer = cv2.face.LBPHFaceRecognizer_create()
 faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 recognizer.read('trainer.yml')
 font = cv2.FONT_HERSHEY_SIMPLEX
+dtime = datetime.datetime.now()
 
 ##### w/o sql database #####
 #id counter
@@ -76,23 +78,26 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
         
         id_, conf = recognizer.predict(roiGray)
         profile=getProfile(id_)
-        
-        if profile!=None and conf < 100:
+        if profile!=None and conf <= 95:
             GPIO.output(21,GPIO.HIGH)
             GPIO.output(20,GPIO.LOW)
             conf = "{0}%".format(round(100-conf))
-            GPIO.output(relay, 0)
+            #GPIO.output(relay, 0)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            cv2.putText(frame, str(profile[1])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-            lcd.message('Welcome ' + str(profile[1]))
-            time.sleep(5)
-            GPIO.output(relay, 1)
+            cv2.putText(frame, str(profile[2])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
+            #time.sleep(10)
+            #GPIO.output(relay, 1)
+            print(dtime)
+            lcd.message('Welcome ' + str(profile[2]))
+            #time.sleep(7)
+            
         else:
-            GPIO.output(relay, 1)
+            #GPIO.output(relay, 1)
             GPIO.output(21,GPIO.LOW)
             GPIO.output(20,GPIO.HIGH)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame, "Unknown", (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
+            camera.capture('facedb/strangers/intruder.jpg')
             
     cv2.imshow('frame', frame)
     key = cv2.waitKey(1)
