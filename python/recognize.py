@@ -13,6 +13,10 @@ from Adafruit_CharLCD import Adafruit_CharLCD
 #relay
 relay = 12
 
+#LED
+GPIO.setup(21,GPIO.OUT)
+GPIO.setup(20,GPIO.OUT)
+
 # LCD Pins
 lcd = Adafruit_CharLCD(rs=26, en=19,
                        d4=13, d5=6, d6=5, d7=11,
@@ -30,7 +34,7 @@ cursorA = mydb.cursor(buffered=True)
 
 
 def getProfile(ID):
-    cmd="SELECT * FROM testingLogs WHERE ID+" + str(ID)
+    cmd="SELECT * FROM test WHERE userID+" + str(ID)
     cursorA.execute(cmd)
     profile = None
     for row in cursorA:
@@ -74,15 +78,19 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
         profile=getProfile(id_)
         
         if profile!=None and conf < 100:
+            GPIO.output(21,GPIO.HIGH)
+            GPIO.output(20,GPIO.LOW)
             conf = "{0}%".format(round(100-conf))
-            #GPIO.output(relay, 0)
+            GPIO.output(relay, 0)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame, str(profile[1])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
             lcd.message('Welcome ' + str(profile[1]))
-            #time.sleep(5)
-            #GPIO.output(relay, 1)
+            time.sleep(5)
+            GPIO.output(relay, 1)
         else:
-            #GPIO.output(relay, 1)
+            GPIO.output(relay, 1)
+            GPIO.output(21,GPIO.LOW)
+            GPIO.output(20,GPIO.HIGH)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame, "Unknown", (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
             

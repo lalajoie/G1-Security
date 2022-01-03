@@ -22,7 +22,7 @@ mydb = mysql.connector.connect (
     password = "lala",
     database="testing" 
     )
-mycursor = mydb.cursor()
+mycursor = mydb.cursor(buffered=True)
 
 #set camera width and height
 cam = cv2.VideoCapture(0)
@@ -30,34 +30,51 @@ cam.set(3, 640) # set video width
 cam.set(4, 480) # set video height
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+#def insertOrUpdate(ID,Name):
+ #   cmd = "SELECT * FROM testingLogs"
+  #  cursorA.execute(cmd)
+   # isRecordExist = 0
+   # for row in cursorA:
+     #   isRecordExist = 1
+     #   if (isRecordExist==1):
+     #       cmd="UPDATE testingLogs SET Name= "+str(face_id)+"WHERE ID = " + str(face_id)
+     #   else:
+     #       cmd="INSERT INTO testingLogs(ID,Name) Values("+str(face_id)+","+str(face_name)+")"
+     #       cursorA.execute(cmd)
+     #      mydb.commit()
+            
 # id and name input
-face_id = input('\n Enter User ID: <return> ==>  ')
-face_name = input('\n Enter Name:')
+face_id = input('Enter User ID: ')
+face_name = input('Enter Name:')
 lcd.message('Hello ' + str(face_name))
 time.sleep(2)
 lcd.clear()
 dtime = datetime.datetime.now()
+
 print("\n [INFO] Initializing face capture. Look the camera and wait ...")
 lcd.message('Look at the \n camera and wait')
 
 #insert to database
-facesql = "INSERT INTO testingLogs (ID, Name, TimeDate) VALUES (%s, %s, %s)"
+facesql = "INSERT INTO test (userID, userName, timeDate) VALUES (%s, %s, %s)"
 faceval = (face_id, face_name, dtime)
 mycursor.execute(facesql, faceval)
 mydb.commit() 
+#insertOrUpdate(face_id, face_name)
 
 #collect 30 face samples
 count = 0
 while(True):
-    ret, img = cam.read()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, frame = cam.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_detector.detectMultiScale(gray, 1.3, 5)
     for (x,y,w,h) in faces:
-        cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)     
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)     
         count += 1
         # Save the captured image into the folder
-        cv2.imwrite("Dataset/" + str(face_name) + '.' + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
-        cv2.imshow('image', img)
+        cv2.imwrite("facedb/" + str(face_name) + '.' + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)	
+
+        cv2.imshow('image', frame)
     k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
     if k == 27:
         break
