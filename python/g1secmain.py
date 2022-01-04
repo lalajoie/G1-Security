@@ -55,90 +55,90 @@ cursorA = mydb.cursor(buffered=True)
 
 #################################################################
 
-def createDataset():
-    cam = cv2.VideoCapture(0)
-    cam.set(3, 640) # set video width
-    cam.set(4, 480) # set video height
-    face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+# def createDataset():
+#     cam = cv2.VideoCapture(0)
+#     cam.set(3, 640) # set video width
+#     cam.set(4, 480) # set video height
+#     face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-    #id name and input
-    face_id = input('Enter User ID: ')
-    face_name = input('Enter Name:')
-    lcd.message('Hello ' + str(face_name))
-    time.sleep(2)
-    lcd.clear()
-    dtime = datetime.datetime.now()
-    print("\n [INFO] Initializing face capture. Look the camera and wait ...")
-    lcd.message('Look at the \n camera and wait')
+#     #id name and input
+#     face_id = input('Enter User ID: ')
+#     face_name = input('Enter Name:')
+#     lcd.message('Hello ' + str(face_name))
+#     time.sleep(2)
+#     lcd.clear()
+#     dtime = datetime.datetime.now()
+#     print("\n [INFO] Initializing face capture. Look the camera and wait ...")
+#     lcd.message('Look at the \n camera and wait')
 
-    facesql = "INSERT INTO test (userID, userName, timeDate) VALUES (%s, %s, %s)"
-    faceval = (face_id, face_name, dtime)
-    cursorA.execute(facesql, faceval)
-    mydb.commit() 
+#     facesql = "INSERT INTO test (userID, userName, timeDate) VALUES (%s, %s, %s)"
+#     faceval = (face_id, face_name, dtime)
+#     cursorA.execute(facesql, faceval)
+#     mydb.commit() 
 
-    count = 0
-    while(True):
-        ret, frame = cam.read()
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_detector.detectMultiScale(gray, 1.3, 5)
-        for (x,y,w,h) in faces:
-            cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)     
-            count += 1
-            # Save the captured image into the folder
-            cv2.imwrite("facedb/" + str(face_name) + '.' + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
-            cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)	
+#     count = 0
+#     while(True):
+#         ret, frame = cam.read()
+#         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#         faces = face_detector.detectMultiScale(gray, 1.3, 5)
+#         for (x,y,w,h) in faces:
+#             cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)     
+#             count += 1
+#             # Save the captured image into the folder
+#             cv2.imwrite("facedb/" + str(face_name) + '.' + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
+#             cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)	
 
-            cv2.imshow('image', frame)
-        k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
-        if k == 27:
-            break
-        elif count >= 50: # Take 50 face samples and stop video
-            break
+#             cv2.imshow('image', frame)
+#         k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
+#         if k == 27:
+#             break
+#         elif count >= 50: # Take 50 face samples and stop video
+#             break
 
-    lcd.clear()
+#     lcd.clear()
 
-    print("\n [INFO] Exiting Program and cleanup stuff")
-    lcd.message('Face Registered')
+#     print("\n [INFO] Exiting Program and cleanup stuff")
+#     lcd.message('Face Registered')
 
-    cam.release()
-    cv2.destroyAllWindows()
+#     cam.release()
+#     cv2.destroyAllWindows()
 
 #################################################################
 
-def trainer():
-    path = 'facedb/'
+# def trainer():
+#     path = 'facedb/'
 
-    recognizer = cv2.face.LBPHFaceRecognizer_create()
-    detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+#     recognizer = cv2.face.LBPHFaceRecognizer_create()
+#     detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-    # function to get the images and label data
-    def getImagesAndLabels(path):
-        imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
-        faceSamples=[]
-        ids = []
-        for imagePath in imagePaths:
-            PIL_img = Image.open(imagePath).convert('L') # convert it to grayscale
-            img_numpy = np.array(PIL_img,'uint8')
-            id = int(os.path.split(imagePath)[-1].split(".")[1])
-            faces = detector.detectMultiScale(img_numpy)
-            for (x,y,w,h) in faces:
-                faceSamples.append(img_numpy[y:y+h,x:x+w])
-                ids.append(id)
-        return faceSamples,ids
+#     # function to get the images and label data
+#     def getImagesAndLabels(path):
+#         imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
+#         faceSamples=[]
+#         ids = []
+#         for imagePath in imagePaths:
+#             PIL_img = Image.open(imagePath).convert('L') # convert it to grayscale
+#             img_numpy = np.array(PIL_img,'uint8')
+#             id = int(os.path.split(imagePath)[-1].split(".")[1])
+#             faces = detector.detectMultiScale(img_numpy)
+#             for (x,y,w,h) in faces:
+#                 faceSamples.append(img_numpy[y:y+h,x:x+w])
+#                 ids.append(id)
+#         return faceSamples,ids
 
-    lcd.message('Training faces \nPlease wait..')
-    print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
+#     lcd.message('Training faces \nPlease wait..')
+#     print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
 
-    faces,ids = getImagesAndLabels(path)
-    recognizer.train(faces, np.array(ids))
+#     faces,ids = getImagesAndLabels(path)
+#     recognizer.train(faces, np.array(ids))
 
-    # Save the model into trainer/trainer.yml
-    recognizer.write('trainer.yml') 
+#     # Save the model into trainer/trainer.yml
+#     recognizer.write('trainer.yml') 
 
-    # Print the numer of faces trained and end program
-    lcd.clear()
-    lcd.message("{0} faces trained \nExiting Program".format(len(np.unique(ids))))
-    print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
+#     # Print the numer of faces trained and end program
+#     lcd.clear()
+#     lcd.message("{0} faces trained \nExiting Program".format(len(np.unique(ids))))
+#     print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
 
 #################################################################
 
@@ -267,7 +267,7 @@ def gettemp():
     bus = SMBus(1)
     sensor = MLX90614(bus, address=0x5A)
     sql = "INSERT INTO testing (Ambient, Object) VALUES (%d, %d)"
-    val = (sensor.get_ambient(), sensor.get_object)
+    val = (sensor.get_ambient(), sensor.get_object())
     cursorA.execute(sql, val)
     mydb.commit();
     bus.close()
@@ -319,6 +319,8 @@ def ultrasonic():
                 dist = distance()
                 print ("Measured Distance = %.1f cm" % dist)
                 time.sleep(1)
+                if dist <= 60:
+                    recognize()
     
             # Reset by pressing CTRL + C
         except KeyboardInterrupt:
