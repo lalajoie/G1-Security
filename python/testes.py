@@ -24,6 +24,7 @@ from email import encoders
 from smbus2 import SMBus
 from mlx90614 import MLX90614
 
+
 ############################ MODULES ############################
 
 #LCD
@@ -93,7 +94,7 @@ def createDataset():
         if k == 27:
             break
         elif count >= 50: # Take 50 face samples and stop video
-            break
+             break
 
     lcd.clear()
 
@@ -149,23 +150,12 @@ def recognize():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(relay, GPIO.OUT)
     GPIO.output(relay ,1)
-    
+
     camera = PiCamera()
     camera.resolution = (640, 480)
     camera.framerate = 30
     rawCapture = PiRGBArray(camera, size = (640, 480))
-    
-    def getProfile(ID):
-        cmd="SELECT * FROM test WHERE pID+" + str(ID)
-        cursorA.execute(cmd)
-        profile = None
-        for row in cursorA:
-            profile=row
-        mydb.commit()
-        #cursorA.close()
-        return profile
 
-    
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
     recognizer.read('trainer.yml')
@@ -324,8 +314,3 @@ def ultrasonic():
         except KeyboardInterrupt:
             print("Measurement stopped by User")
             GPIO.cleanup()
-
-#################################################################
-
-if __name__ == '__main__':
-    ultrasonic()

@@ -9,7 +9,14 @@ import pickle
 import time
 from time import sleep
 import datetime
+
+from smbus2 import SMBus
+from mlx90614 import MLX90614
+bus = SMBus(1)
+
 from Adafruit_CharLCD import Adafruit_CharLCD
+
+sensor = MLX90614(bus, address=0x5A)
 
 #relay
 relay = 12
@@ -90,6 +97,7 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
             print(dtime)
             lcd.message('Welcome ' + str(profile[2]))
             #time.sleep(7)
+            
             
         else:
             #GPIO.output(relay, 1)
