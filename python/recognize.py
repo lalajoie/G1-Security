@@ -89,23 +89,23 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
             GPIO.output(21,GPIO.HIGH)
             GPIO.output(20,GPIO.LOW)
             conf = "{0}%".format(round(100-conf))
-            #GPIO.output(relay, 0)
+            GPIO.output(relay, 0)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame, str(profile[2])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-            #time.sleep(10)
-            #GPIO.output(relay, 1)
+            time.sleep(5)
+            GPIO.output(relay, 1)
             print(dtime)
             lcd.message('Welcome ' + str(profile[2]))
             #time.sleep(7)
             
             
         else:
-            #GPIO.output(relay, 1)
+            GPIO.output(relay, 1)
             GPIO.output(21,GPIO.LOW)
             GPIO.output(20,GPIO.HIGH)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame, "Unknown", (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-            camera.capture('facedb/strangers/intruder.jpg')
+            #camera.capture('facedb/strangers/intruder.jpg')
             
     cv2.imshow('frame', frame)
     key = cv2.waitKey(1)

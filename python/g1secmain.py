@@ -10,6 +10,7 @@ import numpy as np
 import numpy as n
 import RPi.GPIO as GPIO
 import pickle
+import multiprocessing
 import smtplib
 import telerivet
 from picamera.array import PiRGBArray
@@ -171,7 +172,8 @@ def recognize():
     recognizer.read('trainer.yml')
     font = cv2.FONT_HERSHEY_SIMPLEX
     dtime = datetime.datetime.now()
-
+    print("recognizer on")
+        
     for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port = True):
         frame = frame.array
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -186,22 +188,27 @@ def recognize():
                 GPIO.output(21,GPIO.HIGH)
                 GPIO.output(20,GPIO.LOW)
                 conf = "{0}%".format(round(100-conf))
-                #GPIO.output(relay, 0)
+                GPIO.output(relay, 0)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 cv2.putText(frame, str(profile[2])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-                #time.sleep(10)
-                #GPIO.output(relay, 1)
-                print(dtime)
-                lcd.message('Welcome ' + str(profile[2]))
+                time.sleep(10)
+                GPIO.output(relay, 1)
+                #print(dtime)
+                #lcd.message('Welcome ' + str(profile[2]))
                 #time.sleep(7)
+                print("ok")
+                time.sleep(5)
+                gettemp()
                 
             else:
-                #GPIO.output(relay, 1)
+                print("unknown")
+                GPIO.output(relay, 1)
                 GPIO.output(21,GPIO.LOW)
                 GPIO.output(20,GPIO.HIGH)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 cv2.putText(frame, "Unknown", (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-                camera.capture('facedb/strangers/intruder.jpg')
+                #camera.capture('facedb/strangers/intruder.jpg')
+                #sendemail()
                 
             
         cv2.imshow('frame', frame)
@@ -243,6 +250,7 @@ def sendemail():
     text = msg.as_string()
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
+    time.sleep(20)
 
 #################################################################
 
@@ -265,12 +273,22 @@ def txtmsg():
 
 def gettemp():
     bus = SMBus(1)
+    #sensor = MLX90614(bus, address=0x5A)
+    #sql = "INSERT INTO testing (Ambient, Object) VALUES (%d, %d)"
+    #val = (sensor.get_ambient(), sensor.get_object())
+    #cursorA.execute(sql, val)
+    #mydb.commit();
+    #bus.close()
     sensor = MLX90614(bus, address=0x5A)
-    sql = "INSERT INTO testing (Ambient, Object) VALUES (%d, %d)"
-    val = (sensor.get_ambient(), sensor.get_object())
-    cursorA.execute(sql, val)
-    mydb.commit();
+    time.sleep(15)
+    print ("Ambient Temperature :", sensor.get_ambient())
+    print ("Object Temperature :", sensor.get_object_1())
+    obj = sensor.get_object_1()
+    strob = str(obj)
+    lcd.message('Temp: ' + strob)
     bus.close()
+    
+    
 
 #################################################################
 
@@ -319,8 +337,13 @@ def ultrasonic():
                 dist = distance()
                 print ("Measured Distance = %.1f cm" % dist)
                 time.sleep(1)
-                if dist <= 60:
-                    recognize()
+                if dist <= 30:
+                    p = multiprocessing.Process(target = recognize, name = "reco")
+                    p.start()
+                    time.sleep(30)
+                    p.terminate()
+                    p.join()
+                   
     
             # Reset by pressing CTRL + C
         except KeyboardInterrupt:
@@ -331,3 +354,4 @@ def ultrasonic():
 
 if __name__ == '__main__':
     ultrasonic()
+    #recognize()

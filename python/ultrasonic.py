@@ -20,6 +20,7 @@ def distance():
     # set Trigger after 0.01ms to LOW
     time.sleep(0.00001)
     GPIO.output(GPIO_TRIGGER, False)
+    GPIO.setwarnings(False)
  
     StartTime = time.time()
     StopTime = time.time()
@@ -46,6 +47,8 @@ if __name__ == '__main__':
             dist = distance()
             print ("Measured Distance = %.1f cm" % dist)
             time.sleep(1)
+            if dist < 60:
+                print("ok")
  
         # Reset by pressing CTRL + C
     except KeyboardInterrupt:

@@ -7,8 +7,9 @@ lcd = Adafruit_CharLCD(rs=26, en=19,
                        cols=16, lines=2)
 lcd.clear()
 # display texLt on LCD display \n = new line
-lcd.message('Welcome Lalaine \n Temp: 36')
+lcd.message('Welcome \nTemp: 36')
 sleep(3)
+lcd.clear
 # scroll text off display
 for x in range(0, 16):
     lcd.move_right()
