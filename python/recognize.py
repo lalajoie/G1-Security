@@ -85,7 +85,7 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
         
         id_, conf = recognizer.predict(roiGray)
         profile=getProfile(id_)
-        if profile!=None and conf <= 95:
+        if profile!=None and conf <= 100:
             GPIO.output(21,GPIO.HIGH)
             GPIO.output(20,GPIO.LOW)
             conf = "{0}%".format(round(100-conf))
@@ -105,7 +105,9 @@ for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port 
             GPIO.output(20,GPIO.HIGH)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             cv2.putText(frame, "Unknown", (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-            #camera.capture('facedb/strangers/intruder.jpg')
+            lcd.message('unrecognized face')
+            #camera.capture('strangers/intruder.jpg')
+            #time.sleep(10)
             
     cv2.imshow('frame', frame)
     key = cv2.waitKey(1)

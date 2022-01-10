@@ -43,9 +43,9 @@ red = 20
 GPIO_TRIGGER = 18
 GPIO_ECHO = 23
 
+
 #################################################################
 
-#def connectDB():
 mydb = mysql.connector.connect (
     host = "localhost",
     user = "g1sec",
@@ -142,7 +142,6 @@ cursorA = mydb.cursor(buffered=True)
 #     print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
 
 #################################################################
-
 def recognize():
     GPIO.setup(white,GPIO.OUT)
     GPIO.setup(red,GPIO.OUT)
@@ -166,13 +165,13 @@ def recognize():
         #cursorA.close()
         return profile
 
-    
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
     recognizer.read('trainer.yml')
     font = cv2.FONT_HERSHEY_SIMPLEX
     dtime = datetime.datetime.now()
-    print("recognizer on")
+    lcd.clear()
+    lcd.message("recognizer on")
         
     for frame in camera.capture_continuous(rawCapture, format='bgr', use_video_port = True):
         frame = frame.array
@@ -185,32 +184,39 @@ def recognize():
             id_, conf = recognizer.predict(roiGray)
             profile=getProfile(id_)
             if profile!=None and conf <= 95:
+                lcd.clear()
+                lcd.message('Welcome, \nScan Temp')
+                gettemp()
+                print("ok")
+                #GPIO.output(relay, 0)
                 GPIO.output(21,GPIO.HIGH)
                 GPIO.output(20,GPIO.LOW)
                 conf = "{0}%".format(round(100-conf))
-                GPIO.output(relay, 0)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 cv2.putText(frame, str(profile[2])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-                time.sleep(10)
-                GPIO.output(relay, 1)
-                #print(dtime)
-                #lcd.message('Welcome ' + str(profile[2]))
-                #time.sleep(7)
-                print("ok")
-                time.sleep(5)
                 gettemp()
+                time.sleep(10)
+                #GPIO.output(relay, 1)
+                #print(dtime)
+                #time.sleep(7)
+                #time.sleep(5)
+                #break
                 
             else:
-                print("unknown")
+                lcd.clear()
+                lcd.message("unknown face")
                 GPIO.output(relay, 1)
                 GPIO.output(21,GPIO.LOW)
                 GPIO.output(20,GPIO.HIGH)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 cv2.putText(frame, "Unknown", (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-                #camera.capture('facedb/strangers/intruder.jpg')
-                #sendemail()
+                camera.capture('strangers/intruder.jpg')
+                sendemail()
+                txtmsg()
                 
-            
+                
+        #camera.close()
+        #ultrasonic()
         cv2.imshow('frame', frame)
         key = cv2.waitKey(1)
         
@@ -236,7 +242,7 @@ def sendemail():
     msg.attach(MIMEText(body, 'plain'))
 
     filename = "intruder.jpg"
-    attachment = open("/var/www/html/g1-Security/python/facedb/strangers/intruder.jpg", "rb")
+    attachment = open("/var/www/html/g1-Security/python/strangers/intruder.jpg", "rb")
 
     part = MIMEBase('application', 'octet-stream')
     part.set_payload((attachment).read())
@@ -267,24 +273,21 @@ def txtmsg():
         to_number = '+639217301559',
         content = 'Unknown person detected. Check your email to see the unidentified person. \n\n\nFrom G1 Security'
     )
+    lcd.clear()
+    lcd.message('message sent')
 
 
 #################################################################
 
 def gettemp():
     bus = SMBus(1)
-    #sensor = MLX90614(bus, address=0x5A)
-    #sql = "INSERT INTO testing (Ambient, Object) VALUES (%d, %d)"
-    #val = (sensor.get_ambient(), sensor.get_object())
-    #cursorA.execute(sql, val)
-    #mydb.commit();
-    #bus.close()
     sensor = MLX90614(bus, address=0x5A)
     time.sleep(15)
     print ("Ambient Temperature :", sensor.get_ambient())
     print ("Object Temperature :", sensor.get_object_1())
     obj = sensor.get_object_1()
     strob = str(obj)
+    lcd.clear()
     lcd.message('Temp: ' + strob)
     bus.close()
     
@@ -299,23 +302,17 @@ def ultrasonic():
     #set GPIO Pins
     GPIO_TRIGGER = 18
     GPIO_ECHO = 23
-    
-    #set GPIO direction (IN / OUT)
     GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
     GPIO.setup(GPIO_ECHO, GPIO.IN)
     
     def distance():
-        # set Trigger to HIGH
         GPIO.output(GPIO_TRIGGER, True)
-    
-        # set Trigger after 0.01ms to LOW
         time.sleep(0.00001)
         GPIO.output(GPIO_TRIGGER, False)
     
         StartTime = time.time()
         StopTime = time.time()
-    
-        # save StartTime
+
         while GPIO.input(GPIO_ECHO) == 0:
             StartTime = time.time()
     
@@ -340,12 +337,10 @@ def ultrasonic():
                 if dist <= 30:
                     p = multiprocessing.Process(target = recognize, name = "reco")
                     p.start()
-                    time.sleep(30)
+                    time.sleep(60)
                     p.terminate()
                     p.join()
-                   
     
-            # Reset by pressing CTRL + C
         except KeyboardInterrupt:
             print("Measurement stopped by User")
             GPIO.cleanup()
@@ -353,5 +348,5 @@ def ultrasonic():
 #################################################################
 
 if __name__ == '__main__':
+    lcd.clear()
     ultrasonic()
-    #recognize()

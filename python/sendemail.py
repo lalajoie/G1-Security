@@ -18,7 +18,7 @@ body = 'There is a stranger at your door.'
 msg.attach(MIMEText(body, 'plain'))
 
 filename = "intruder.jpg"
-attachment = open("/var/www/html/g1-Security/python/facedb/strangers/intruder.jpg", "rb")
+attachment = open("/var/www/html/g1-Security/python/strangers/intruder.jpg", "rb")
 
 part = MIMEBase('application', 'octet-stream')
 part.set_payload((attachment).read())
