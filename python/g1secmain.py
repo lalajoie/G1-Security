@@ -186,7 +186,7 @@ def recognize():
             if profile!=None and conf <= 95:
                 lcd.clear()
                 lcd.message('Welcome, \nScan Temp')
-                #gettemp()
+                gettemp()
                 print("ok")
                 GPIO.output(relay, 0)
                 GPIO.output(21,GPIO.HIGH)
@@ -194,16 +194,16 @@ def recognize():
                 conf = "{0}%".format(round(100-conf))
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 cv2.putText(frame, str(profile[2])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
-                gettemp()
+                #gettemp()
                 time.sleep(10)
                 GPIO.output(relay, 1)
+                lcd.clear()
                 #print(dtime)
                 #time.sleep(7)
                 #time.sleep(5)
                 #break
                 
             else:
-                lcd.clear()
                 lcd.message("unknown face")
                 GPIO.output(relay, 1)
                 GPIO.output(21,GPIO.LOW)
@@ -213,7 +213,7 @@ def recognize():
                 camera.capture('strangers/intruder.jpg')
                 sendemail()
                 txtmsg()
-                
+                lcd.clear()
                 
         #camera.close()
         #ultrasonic()
@@ -221,11 +221,11 @@ def recognize():
         key = cv2.waitKey(1)
         
         rawCapture.truncate(0)
-        print("\n [INFO] Exiting Program and cleanup stuff")
-        
+       
         if key == 27:
-            break
+             break
     # Do a bit of cleanup
+    #print("\n [INFO] Exiting Program and cleanup stuff")
     cv2.destroyAllWindows()
     
 
@@ -283,13 +283,13 @@ def txtmsg():
 def gettemp():
     bus = SMBus(1)
     sensor = MLX90614(bus, address=0x5A)
-    time.sleep(15)
-    print ("Ambient Temperature :", sensor.get_ambient())
-    print ("Object Temperature :", sensor.get_object_1())
+    time.sleep(5)
     obj = sensor.get_object_1()
     strob = str(obj)
     lcd.clear()
     lcd.message('Temp: ' + strob)
+    lcd.message("\n Enter Now")
+    time.sleep(2)
     bus.close()
     
     
@@ -350,4 +350,5 @@ def ultrasonic():
 
 if __name__ == '__main__':
     lcd.clear()
-    ultrasonic()
+    #ultrasonic()
+    recognize()
