@@ -186,9 +186,9 @@ def recognize():
             if profile!=None and conf <= 95:
                 lcd.clear()
                 lcd.message('Welcome, \nScan Temp')
-                gettemp()
+                #gettemp()
                 print("ok")
-                #GPIO.output(relay, 0)
+                GPIO.output(relay, 0)
                 GPIO.output(21,GPIO.HIGH)
                 GPIO.output(20,GPIO.LOW)
                 conf = "{0}%".format(round(100-conf))
@@ -196,7 +196,7 @@ def recognize():
                 cv2.putText(frame, str(profile[2])+ str(conf), (x,y), font, 2, (0,0,255), 2, cv2.LINE_AA)
                 gettemp()
                 time.sleep(10)
-                #GPIO.output(relay, 1)
+                GPIO.output(relay, 1)
                 #print(dtime)
                 #time.sleep(7)
                 #time.sleep(5)
@@ -221,12 +221,13 @@ def recognize():
         key = cv2.waitKey(1)
         
         rawCapture.truncate(0)
+        print("\n [INFO] Exiting Program and cleanup stuff")
         
         if key == 27:
             break
     # Do a bit of cleanup
-    print("\n [INFO] Exiting Program and cleanup stuff")
     cv2.destroyAllWindows()
+    
 
 #################################################################
 
